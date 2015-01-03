@@ -13,6 +13,7 @@ public class Output
 		GpioPinDigitalOutput test4 = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_04, "Test 4", PinState.LOW);
 		GpioPinDigitalOutput[] test = {test1, test2, test3, test4};
 
+		/*
 		int current = 0;
 		int prev = test.length - 1;
 		for (int k = 0; k < test.length * 8; ++k) {
@@ -23,13 +24,31 @@ public class Output
 			sleep(50);
 		}
 
-		for (int k = 0; k < 2; k++) {
-			for (GpioPinDigitalOutput pin : test) {
-				pin.high();
-			}
-			sleep(1000);
-			for (GpioPinDigitalOutput pin : test) {
-				pin.low();
+		for (GpioPinDigitalOutput pin : test) {
+			test.low();
+		}
+		*/
+
+		for (int j = 0; j < 4; ++j) {
+			boolean[] prev = new boolean[test.length];
+			boolean[] curr = new boolean[test.length];
+			for (int n = 0; n < 16; ++n) {
+				String bin = Integer.toBinaryString(n);
+				while (bin.length() < test.length) {
+					bin = "0" + bin;
+				}
+				System.out.printf("%2d :: %s\n", n, bin);
+				for (int k = 0; k < curr.length; ++k) {
+					curr[k] = bin.charAt(k) == '1';
+					if (prev[k] != curr[k]) {
+						if (curr[k])
+							test[k].high();
+						else
+							test[k].low();
+					}
+					prev[k] = curr[k];
+				}
+				sleep(1000);
 			}
 		}
 	}

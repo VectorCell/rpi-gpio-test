@@ -5,6 +5,8 @@ public class Input
 {
 	public static void main(String[] args)
 	{
+		System.out.println("Listening ...");
+
 		final GpioController gpio = GpioFactory.getInstance();
 
 		GpioPinDigitalInput test1 = gpio.provisionDigitalInputPin(RaspiPin.GPIO_07, "Test 1", PinPullResistance.PULL_DOWN);
@@ -16,22 +18,31 @@ public class Input
 		// create and register gpio pin listener
 		for (final GpioPinDigitalInput pin : test) {
 			pin.addListener(new GpioPinListenerDigital() {
+				int previous = -1;
 				@Override
 				public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
 					// display pin state on console
 					// System.out.println(" --> GPIO PIN STATE CHANGE: " + event.getPin() + " = " + event.getState());
+					int n = 0;
 					for (GpioPinDigitalInput pin : test) {
-						if (pin.isHigh()) {
-							System.out.print("0");
-						} else {
-							System.out.print(" ");
-						}
+						n *= 2;
+						if (pin.isHigh())
+							n += 1;
 					}
-					System.out.println();
+					if (n != previous) {
+						String bin = Integer.toBinaryString(n);
+						while (bin.length() < test.length)
+							bin = "0" + bin;
+						System.out.printf("%2d :: %s\n", n, bin);
+					}
+					previous = n;
 				}
 			});
 		}
-		sleep(10000);
+		
+		while (true) {
+			sleep(10000);
+		}
 
 		/*
 		// create gpio controller instance
@@ -56,14 +67,6 @@ public class Input
 		}
 		*/
 	}
-
-	/*
-	@Override
-	public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
-		// display pin state on console
-		System.out.println(" --> GPIO PIN STATE CHANGE: " + event.getPin() + " = " + event.getState());
-	}
-	*/
 
 	public static void sleep(long millis)
 	{
