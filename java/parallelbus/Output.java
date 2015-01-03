@@ -39,16 +39,16 @@ public class Output
 
 		boolean clock_on = false;
 
-//		System.out.println("Blinking all bins with clock ...");
-//		clock_on = false;
-//		for (int i = 0; i < 10; ++i) {
-//			for (int k = 0; k < pins.length; ++k) {
-//				pins[k].setState(clock_on ? PinState.HIGH : PinState.LOW);
-//			}
-//			clock.setState(clock_on ? PinState.HIGH : PinState.LOW);
-//			sleep(500);
-//			clock_on = !clock_on;
-//		}
+		System.out.println("Blinking all bins with clock ...");
+		clock_on = false;
+		for (int i = 0; i < 10; ++i) {
+			for (int k = 0; k < pins.length; ++k) {
+				pins[k].setState(clock_on ? PinState.HIGH : PinState.LOW);
+			}
+			clock.setState(clock_on ? PinState.HIGH : PinState.LOW);
+			sleep(500);
+			clock_on = !clock_on;
+		}
 
 		String msg = "\0\0\0Hello ENIAC, this is PiOne. Do you read me? The current time is " + System.currentTimeMillis() + ".\n";
 		System.out.println("Sending message [" + msg.substring(0, msg.length() - 1) + "] ...");
