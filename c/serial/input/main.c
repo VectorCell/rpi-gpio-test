@@ -2,46 +2,62 @@
 #include <stdint.h>
 #include <wiringPi.h>
 
-// pin assignments
-#define P_DATA 9  // data
-#define P_WREN 2  // write enable
-#define P_READ 12 // read acknowledge
+#include "../common.h"
 
-#define SIZE 800000 // number of bits to be read
+int read = 0;
 
-int main (void)
+inline int read_bit()
 {
-	printf("Reading %d bits ...\n", SIZE);
+	while (digitalRead(P_WREN) == read);
+	read = !read;
+	digitalWrite(P_READ, read);
+	return digitalRead(P_DATA);
+}
+
+int main()
+{
+	//printf("Reading %d bytes ...\n", SIZE);
 
 	if (wiringPiSetup() == -1)
 		return 1;
 
-	int read = 0;
 	pinMode(P_DATA, INPUT);
 	pinMode(P_WREN, INPUT);
 	pinMode(P_READ, OUTPUT);
 	digitalWrite(P_READ, read);
 
-	printf("waiting for P_WREN to be 0 ...\n");
+
+	//printf("waiting for P_WREN to be 0 ...\n");
 	while (digitalRead(P_WREN) != 0);
 
-	printf("bit #   bit val\n");
-	printf("------  ------\n");
-	uint8_t bits[SIZE];
+	//printf("reading data ...\n");
+	//printf("byte #  byte val\n");
+	//printf("------  --------\n");
 	for (int i = 0; i < SIZE; ++i) {
-		//if (i % 1000 == 0) printf("%d / %d\n", i, SIZE);
-		while (digitalRead(P_WREN) == read);
-		bits[i] = digitalRead(P_DATA);
-		//printf("%6d  %6d\n", i, bits[i]);
-		read = !read;
-		digitalWrite(P_READ, read);
+		uint8_t byte = 0;
+		for (int bit = 7; bit >= 0; --bit) {
+			byte <<= 1;
+			byte += read_bit();
+		}
+		data[i] = byte;
+		//printf("%6d  ", i);
+		//printf("%6d\n", byte);
 	}
 
-	printf("setting P_READ to 0 ...\n");
-	digitalWrite(P_READ, 1);
+	printf("verfying data ...\n");
+	uint32_t bad_bytes = 0;
+	for (int i = 0; i < SIZE; ++i) {
+		if (data[i] != (i & 0xFF)) {
+			++bad_bytes;
+			printf("discrepancy: byte %d should be %d, but is %d\n", i, i & 0xFF, data[i]);
+		}
+	}
+	printf("%d / %d bad bytes\n", bad_bytes, SIZE);
+
+	//printf("setting P_READ to 0 ...\n");
 	digitalWrite(P_READ, 0);
 
-	printf("done!\n");
+	//printf("done!\n");
 
 	return 0;
 }
